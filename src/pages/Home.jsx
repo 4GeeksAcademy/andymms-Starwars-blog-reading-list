@@ -1,6 +1,7 @@
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { CharacterCard } from "../components/CharactersCard.jsx";
 import { PlanetsCard } from "../components/PlanetsCard.jsx";
+import { VehiclesCard } from "../components/VehiclesCard.jsx";
 import { useEffect } from "react";
 
 export const Home = () => {
@@ -153,6 +154,82 @@ export const Home = () => {
 		}
 	}
 
+	/* VEHICLES */
+
+	async function FetchingVehiclesDetails(vehicle) {
+		try {
+			const vehicleDetails = await fetch(`${vehicle.url}`)
+			if (!vehicleDetails.ok) {
+				throw new Error(`Error fetching details for ${vehicle.name}: ${vehicleDetails.statusText}`);
+			}
+			const data = await vehicleDetails.json();
+
+			return data.result;
+
+		} catch (error) {
+			console.error(`Error finding the vehicle: ${vehicle.name}`, error)
+		}
+	}
+
+	async function FetchingVehiclesImages(vehicle) {
+
+		const vehicleUrlSplit = vehicle.url.split('/')
+
+		const vehicleId = vehicleUrlSplit[vehicleUrlSplit.length - 2]
+
+		const imageUrl = `https://raw.githubusercontent.com/breatheco-de/swapi-images/master/public/images/vehicles/${vehicleId}.jpg`;
+
+		try {
+			const response = await fetch(imageUrl, { method: 'HEAD' })
+
+			if (!response.ok) {
+				throw new Error(`Image not found or error status: ${response.status} ${response.statusText}`);
+			}
+
+			return imageUrl;
+
+		} catch (error) {
+			console.error(`Error finding the vehicle's image: ${vehicle.name}`, error);
+		}
+	}
+
+	async function getVehicles() {
+		try {
+			const vehicleSummary = await fetch("https://swapi.dev/api/vehicles/")
+			if (!vehicleSummary.ok) {
+				throw new Error(`Error getting vehicle ${vehicleSummary.statusText}`)
+			}
+			const data = await vehicleSummary.json();
+			const SWvehiclesSummary = data.results;
+
+			const SWvehiclesDetailsPromise = SWvehiclesSummary.map(async (vehicle) => {
+				const details = await FetchingVehiclesDetails(vehicle);
+
+				return { ...vehicle, ...details };
+			});
+
+			const SWvehicleDetails = await Promise.all(SWvehiclesDetailsPromise)
+
+			const SWvehiclesImagesPromise = SWvehicleDetails.map(async (vehicle) => {
+				const images = await FetchingVehiclesImages(vehicle);
+
+				return {
+					...vehicle,
+					img_url: images
+				};
+			});
+
+			const SWvehicleWithImages = await Promise.all(SWvehiclesImagesPromise)
+
+			dispatch({
+				type: "get_vehicles",
+				payload: { vehicles: SWvehicleWithImages }
+			})
+
+		} catch (error) {
+			console.error("Error finding the characters:", error)
+		}
+	}
 
 	useEffect(() => {
 		if (store.characters.length === 0) {
@@ -165,6 +242,12 @@ export const Home = () => {
 			getPlanets()
 		}
 	}, [store.planets.length]);
+
+	useEffect(() => {
+		if (store.vehicles.length === 0) {
+			getVehicles()
+		}
+	}, [store.vehicles.length]);
 
 
 	return (
@@ -182,6 +265,14 @@ export const Home = () => {
 				{store && store.planets?.map((planet, index) => (
 					<div key={index} className="col-3 mx-3">
 						<PlanetsCard {...planet} />
+					</div>
+				))}
+			</div>
+			<h1 className="text-warning mt-5"><b>Vehicles</b></h1>
+			<div className="d-flex flex-row flex-nowrap overflow-auto mb-5">
+				{store && store.vehicles?.map((vehicle, index) => (
+					<div key={index} className="col-3 mx-3">
+						<VehiclesCard {...vehicle} />
 					</div>
 				))}
 			</div>
