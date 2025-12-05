@@ -22,15 +22,53 @@ body {
 }
 
 .cards::-webkit-scrollbar-track {
-    background-color: #121212; 
+    background-color: #121212;
 }
 
 
 .cards::-webkit-scrollbar-thumb {
-    background-color: #fff345; 
+    background-color: #fff345;
     border-radius: 10px;
 }
 
 .cards::-webkit-scrollbar {
-    height: 8px; 
+    height: 8px;
+}
+
+.searchContainer {
+    position: relative;
+}
+
+.autocompleteItems {
+    position: absolute;
+    border: 1px solid #343a40;
+    z-index: 99;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 1px;
+}
+
+.autocompleteItems::-webkit-scrollbar-track {
+    background-color: #121212;
+}
+
+
+.autocompleteItems::-webkit-scrollbar-thumb {
+    background-color: #fff345;
+    border-radius: 10px;
+}
+
+.autocompleteItems::-webkit-scrollbar {
+    width: 10px;
+}
+
+.Suggestions {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #212529;
+    color: white;
+    border-bottom: 1px solid #495057;
 }

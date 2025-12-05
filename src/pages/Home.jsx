@@ -4,6 +4,21 @@ import { PlanetsCard } from "../components/PlanetsCard.jsx";
 import { VehiclesCard } from "../components/VehiclesCard.jsx";
 import { useEffect } from "react";
 
+const getCachedData = (key) => {
+	const cached = localStorage.getItem(key)
+	if (cached) {
+		console.log(`Loading ${key} from Local Storage`)
+		return JSON.parse(cached);
+	}
+	return null
+}
+
+const setCacheData = (key, data) => {
+	localStorage.setItem(key, JSON.stringify(data))
+}
+
+
+
 export const Home = () => {
 
 	const { store, dispatch } = useGlobalReducer()
@@ -47,6 +62,18 @@ export const Home = () => {
 	}
 
 	async function getPeople() {
+
+		const cacheKey = "characters"
+		const cachedCharacters = getCachedData(cacheKey)
+
+		if (cachedCharacters) {
+			dispatch({
+				type: "get_characters",
+				payload: { characters: cachedCharacters }
+			});
+			return
+		}
+
 		try {
 			const characterSummary = await fetch("https://www.swapi.tech/api/people/")
 			if (!characterSummary.ok) {
@@ -73,6 +100,8 @@ export const Home = () => {
 			});
 
 			const SWcharacterWithImages = await Promise.all(SWcharactersImagesPromise)
+
+			setCacheData(cacheKey, SWcharacterWithImages)
 
 			dispatch({
 				type: "get_characters",
@@ -123,6 +152,18 @@ export const Home = () => {
 	}
 
 	async function getPlanets() {
+
+		const cacheKey = "planets"
+		const cachedCharacters = getCachedData(cacheKey)
+
+		if (cachedCharacters) {
+			dispatch({
+				type: "get_planets",
+				payload: { planets: cachedCharacters }
+			});
+			return
+		}
+
 		try {
 			const planetSummary = await fetch("https://www.swapi.tech/api/planets/")
 			if (!planetSummary.ok) {
@@ -149,6 +190,8 @@ export const Home = () => {
 			});
 
 			const SWplanetWithImages = await Promise.all(SWplanetsImagesPromise)
+
+			setCacheData(cacheKey, SWplanetWithImages)
 
 			dispatch({
 				type: "get_planets",
@@ -203,6 +246,19 @@ export const Home = () => {
 	}
 
 	async function getVehicles() {
+
+		const cacheKey = "vehicles"
+		const cachedCharacters = getCachedData(cacheKey)
+
+		if (cachedCharacters) {
+			dispatch({
+				type: "get_vehicles",
+				payload: { vehicles: cachedCharacters }
+			});
+			return
+		}
+
+
 		try {
 			const vehicleSummary = await fetch("https://swapi.dev/api/vehicles/")
 			if (!vehicleSummary.ok) {
@@ -230,6 +286,8 @@ export const Home = () => {
 
 			const SWvehicleWithImages = await Promise.all(SWvehiclesImagesPromise)
 
+			setCacheData(cacheKey, SWvehicleWithImages)
+
 			dispatch({
 				type: "get_vehicles",
 				payload: { vehicles: SWvehicleWithImages }
@@ -237,6 +295,56 @@ export const Home = () => {
 
 		} catch (error) {
 			console.error("Error finding the characters:", error)
+		}
+	}
+
+	/* GET NAMES FOR SEARCH BAR */
+
+	async function getNamesForSearch() {
+		if (store.characters.length === 0 || store.planets.length === 0 || store.vehicles.length === 0) {
+			return;
+		}
+
+		try {
+
+			const CharactersData = store.characters.map((char, index) => ({
+				name: char.name.toLowerCase(),
+				class: "character",
+				id: index + 1
+			}));
+
+			// Map Planet data
+			const PlanetData = store.planets.map((planet, index) => ({
+				name: planet.name.toLowerCase(),
+				class: "planet",
+				id: index + 1
+			}));
+
+			const VehiclesData = store.vehicles.map((vehicle) => {
+
+				const urlSplit = vehicle.url.split('/');
+				const vehicleId = urlSplit[urlSplit.length - 2];
+
+				return {
+					name: vehicle.name.toLowerCase(),
+					class: "vehicle",
+					id: vehicleId 
+				};
+			});
+
+			const Allnames = [
+				...CharactersData,
+				...PlanetData,
+				...VehiclesData
+			]
+
+			dispatch({
+				type: "get_names_for_search",
+				payload: { search: Allnames }
+			})
+
+		} catch (error) {
+			console.error("Error generating search names:", error)
 		}
 	}
 
@@ -257,6 +365,13 @@ export const Home = () => {
 			getVehicles()
 		}
 	}, [store.vehicles.length]);
+
+	useEffect(() => {
+		if (store.characters.length > 0 && store.planets.length > 0 && store.vehicles.length > 0) {
+			getNamesForSearch()
+		}
+	}, [store.characters.length, store.planets.length, store.vehicles.length]);
+
 
 	return (
 		<div className="container mt-5">

@@ -16,7 +16,8 @@ export const initialStore = () => {
     characters: [],
     planets: [],
     vehicles: [],
-    favorites: []
+    favorites: [],
+    search: []
   }
 }
 
@@ -78,6 +79,13 @@ export default function storeReducer(store, action = {}) {
         favorites: store.favorites.filter(
           (item) => item.id !== itemToRemove.id
         )
+      };
+
+    case 'get_names_for_search':
+
+      return {
+        ...store,
+        search: action.payload.search
       };
 
     default:
