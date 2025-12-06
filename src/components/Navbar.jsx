@@ -74,7 +74,7 @@ export const Navbar = () => {
 						alt="Star Wars" />
 				</Link>
 				<div className="input-group searchContainer" style={{ width: "250px", position: "relative" }}>
-					<span class="input-group-text" id="basic-addon1">
+					<span className="input-group-text" id="basic-addon1">
 						<i className="fa-solid fa-magnifying-glass"></i>
 					</span>
 					<input
