@@ -28,8 +28,21 @@ export const VehiclesCard = (props) => {
         })
     }
 
+    const HandleFavoriteToggle = (name, id) => {
+        if (isCharacterFavorited) {
+
+            const unFavoritedItem = store.favorites.find(item => item.id === id)
+
+            dispatch({
+                type: "item_unfavorited",
+                payload: { favorites: unFavoritedItem }
+            })
+        } else if (!isCharacterFavorited) {
+            addFavorite(name, id)
+        }
+    }
+
     const buttonClass = isCharacterFavorited ? "btn-warning" : "btn-outline-warning";
-    const heartIcon = isCharacterFavorited ? "fa-solid fa-heart fill" : "fa-regular fa-heart no-fill";
 
     return (
         <>
@@ -42,14 +55,13 @@ export const VehiclesCard = (props) => {
                         Cost in credits: {props.cost_in_credits} ᖬ <br />
                         Cargo capacity: {props.cargo_capacity} <br />
                     </p>
-                   <div className="d-flex justify-content-between">
+                    <div className="d-flex justify-content-between">
                         <Link to={"/properties/vehicle/" + vehicleId}>
                             <button className="btn btn-success">Learn more</button>
                         </Link>
-                        <button className={`btn ${buttonClass} favorite`} data-bs-toggle="button"
-                        onClick={() => addFavorite(props.name, vehicleId)}
-                        disabled={isCharacterFavorited}>
-                            <i className={heartIcon}></i>
+                       <button className={`btn ${buttonClass} favorite`}
+                            onClick={() => HandleFavoriteToggle(props.name, vehicleId)}>
+                            <i className={isCharacterFavorited ? "fa-solid fa-heart" : "fa-regular fa-heart"}></i>
                         </button>
                     </div>
                 </div>

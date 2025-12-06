@@ -6,26 +6,39 @@ export const CharacterCard = (props) => {
 
     const { store, dispatch } = useGlobalReducer()
 
-   const isCharacterFavorited = store.favorites.some(
-        (fav) => fav.name === props.name 
+    const isCharacterFavorited = store.favorites.some(
+        (fav) => fav.name === props.name
     );
 
     const addFavorite = (character, id) => {
 
-        const itemToFavorite = { 
+        const itemToFavorite = {
             name: character,
             id: id,
             class: props.class
         }
 
-        dispatch ({
+        dispatch({
             type: "item_favorited",
-			payload: { favorites: itemToFavorite }
+            payload: { favorites: itemToFavorite }
         })
     }
-    
+
+    const HandleFavoriteToggle = (name, id) => {
+        if (isCharacterFavorited) {
+
+            const unFavoritedItem = store.favorites.find(item => item.id === id)
+
+            dispatch({
+                type: "item_unfavorited",
+                payload: { favorites: unFavoritedItem }
+            })
+        } else if (!isCharacterFavorited) {
+            addFavorite(name, id)
+        }
+    }
+
     const buttonClass = isCharacterFavorited ? "btn-warning" : "btn-outline-warning";
-    const heartIcon = isCharacterFavorited ? "fa-solid fa-heart fill" : "fa-regular fa-heart no-fill";
 
     return (
         <>
@@ -43,10 +56,9 @@ export const CharacterCard = (props) => {
                         <Link to={"/properties/character/" + props.uid}>
                             <button className="btn btn-success">Learn more</button>
                         </Link>
-                        <button className={`btn ${buttonClass} favorite`} data-bs-toggle="button"
-                        onClick={() => addFavorite(props.name, props.uid)}
-                        disabled={isCharacterFavorited}>
-                            <i className={heartIcon}></i>
+                        <button className={`btn ${buttonClass} favorite`}
+                            onClick={() => HandleFavoriteToggle(props.name, props.uid)}>
+                            <i className={isCharacterFavorited ? "fa-solid fa-heart" : "fa-regular fa-heart"}></i>
                         </button>
                     </div>
                 </div>
